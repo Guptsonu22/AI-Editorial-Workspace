@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAllArticles, saveArticle } from "@/lib/db/storage";
+import { getAllArticles, saveArticle, getArticleById } from "@/lib/db/storage";
 import { NewsletterArticle } from "@/types/editorial";
 import { countWords } from "@/lib/extraction/extractor";
 
@@ -13,7 +13,9 @@ const SaveArticleSchema = z.object({
   angleId: z.string().optional(),
   angleTitle: z.string().optional(),
   headline: z.string().min(5),
+  originalHeadline: z.string().optional(),
   content: z.string().min(20),
+  originalContent: z.string().optional(),
   targetWordCount: z.number().int().default(400),
   status: z.enum(["draft", "in_review", "ready", "published"]).default("ready"),
   sourceLinks: z
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = parsed.data;
+    const existing = data.id ? await getArticleById(data.id) : null;
     const article: NewsletterArticle = {
       id: data.id || `art-${Date.now()}`,
       projectId: data.projectId,
@@ -62,12 +65,14 @@ export async function POST(req: NextRequest) {
       angleId: data.angleId,
       angleTitle: data.angleTitle,
       headline: data.headline,
+      originalHeadline: data.originalHeadline || existing?.originalHeadline || data.headline,
       content: data.content,
+      originalContent: data.originalContent || existing?.originalContent || data.content,
       wordCount: countWords(data.content),
       targetWordCount: data.targetWordCount,
       status: data.status,
       sourceLinks: data.sourceLinks,
-      createdAt: new Date().toISOString(),
+      createdAt: existing?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 

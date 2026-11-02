@@ -281,7 +281,9 @@ export default function NewsletterStudioPage() {
           angleId: selectedAngleId || undefined,
           angleTitle: activeAngle?.title,
           headline,
+          originalHeadline: originalHeadline || headline,
           content,
+          originalContent: originalContent || content,
           targetWordCount,
           status: "ready",
           sourceLinks: activeProject.sources.map((s, idx) => ({

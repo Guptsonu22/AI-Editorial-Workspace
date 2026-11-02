@@ -51,6 +51,8 @@ export async function POST(req: NextRequest) {
     metrics.passiveVoiceCount = suggestions.filter((s) => s.type === "passive_voice").length;
     metrics.jargonCount = suggestions.filter((s) => s.type === "jargon").length;
     metrics.fillerCount = suggestions.filter((s) => s.type === "filler_phrase").length;
+    metrics.complexityCount = suggestions.filter((s) => s.type === "complexity").length;
+    metrics.repetitionCount = suggestions.filter((s) => s.type === "repetition").length;
 
     const draftId = id || `draft-${Date.now()}`;
     const draft: WritingDraft = {
