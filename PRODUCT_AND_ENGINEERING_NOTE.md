@@ -89,6 +89,14 @@ The application mirrors the professional newsroom pipeline:
 | **Atomic Suggestion Acceptance** | High (Preserves author voice) | Accepting a rewrite targets solely that character/sentence boundary; never replaces surrounding prose. Includes full multi-level undo stack. |
 | **Dual-Mode Persistence** | High (Zero friction setup) | Atomic JSON file persistence (`.data/editorial-store.json`) works out-of-the-box with zero database configuration; Supabase PostgreSQL adapter ready for production. |
 
+### 4.1. Deliberately Excluded Features (Editorial Discipline & Scope Management)
+
+To maintain high product focus, low latency, and newsroom credibility, several features were deliberately excluded:
+1. **Automated Headless Chromium Fleet (Puppeteer/Playwright in Production):** Running headless browser clusters adds 350MB+ RAM per instance and slows scraping from 150ms to 4–6 seconds. We deliberately chose lightweight Cheerio paired with an immediate **Manual Text Fallback Modal** for paywalls.
+2. **Autonomous Full-Draft "Fix My Article" Magic Buttons:** Generic AI tools often offer a single button that rewrites the whole article. We deliberately prohibited full-text overwriting; every revision must be an atomic proposal inspected by the editor.
+3. **Automated Direct Publishing to ESP APIs (Beehiiv/Substack):** We deliberately omitted automatic live publishing hooks to enforce a human-in-the-loop final review gate. The output is provided as formatted Markdown and structured JSON.
+4. **Heavy Multi-User CRDT WebSockets (Yjs):** Real-time collaborative multi-cursor editing was excluded to keep local execution zero-friction and eliminate external server dependencies. Single-editor atomic file persistence satisfies the core requirements reliably.
+
 ---
 
 ## 5. Critical Technical Trade-offs & Engineering Decisions
