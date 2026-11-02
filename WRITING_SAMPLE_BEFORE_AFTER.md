@@ -89,6 +89,26 @@ This document provides a line-level audit demonstrating how the **Writing Assist
 
 ---
 
+### Suggestion 6: Consecutive Term Repetition
+- **Issue Category:** `repetition` (Flagged Violet)
+- **Original Segment:** *"parameters"* (repeated in consecutive sentences: *"671 billion parameters, R1 activates only 37 billion parameters"*)
+- **Explanation:** Repeating "parameters" in immediately adjacent clauses dulls vocabulary variety.
+- **Why It Matters:** Tech newsletters demand high information density without monotonic phrasing.
+- **Suggested Rewrite:** *"activates only 37 billion weights for any given token"*
+- **Status:** **ACCEPTED**
+
+---
+
+### Suggestion 7: Complex / Stilted Phrasing
+- **Issue Category:** `complexity` (Flagged Indigo)
+- **Original Segment:** *"purely computational in nature"* and *"endeavor to facilitate sovereign deployment while remaining cognizant of"*
+- **Explanation:** "In nature", "endeavor to facilitate", and "cognizant of" are wordy Latinate constructions that create bureaucratic distance.
+- **Why It Matters:** Direct verbs ("try to enable", "aware of") deliver the exact same technical meaning with lower cognitive load.
+- **Suggested Rewrite:** *"The breakthrough is structural rather than purely computational."* and *"try to enable sovereign deployment while remaining aware of"*
+- **Status:** **ACCEPTED**
+
+---
+
 ## 4. Polished Final Text (After Acceptance)
 
 > When DeepSeek open-sourced its flagship reasoning model this month, Silicon Valley experienced an immediate reckoning. For over eighteen months, the dominant narrative held that frontier-grade reasoning demanded hundreds of millions in bespoke capital expenditures. DeepSeek-R1 dismantled that orthodoxy with a reported $5.94 million base training budget and an MIT-licensed release that matches OpenAI’s o1 across gold-standard mathematical benchmarks.

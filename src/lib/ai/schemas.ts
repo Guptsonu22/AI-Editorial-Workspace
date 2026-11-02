@@ -25,19 +25,27 @@ export const CreateProjectSchema = z.object({
 export const KeyDevelopmentSchema = z.object({
   event: z.string().min(5),
   sourceIndex: z.number().int().positive(),
+  sourceTitle: z.string().optional(),
   timestamp: z.string().optional(),
+  isSupported: z.boolean().default(true),
 });
 
 export const VerifiedFactSchema = z.object({
   fact: z.string().min(5),
   sourceIndex: z.number().int().positive(),
+  sourceTitle: z.string().optional(),
   quote: z.string().optional(),
+  evidenceSnippet: z.string().optional(),
+  isSupported: z.boolean().default(true),
+  unsupportedReason: z.string().optional(),
 });
 
 export const SpeculationItemSchema = z.object({
   claim: z.string().min(5),
   sourceIndex: z.number().int().positive(),
+  sourceTitle: z.string().optional(),
   editorialNote: z.string().min(5),
+  isSupported: z.boolean().default(false),
 });
 
 export const EditorialAngleSchema = z.object({

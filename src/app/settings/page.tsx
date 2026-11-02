@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Settings,
   ShieldCheck,
@@ -10,6 +11,8 @@ import {
   AlertCircle,
   Download,
   Info,
+  Sliders,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,15 +58,26 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSavePreferences = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 2000);
+  };
+
   return (
-    <div className="space-y-8 pb-16 max-w-4xl">
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="space-y-8 pb-16 max-w-4xl"
+    >
       {/* Header */}
-      <div>
+      <div className="border-b border-zinc-850 pb-6">
         <div className="flex items-center gap-2 mb-1">
           <h2 className="text-2xl font-bold tracking-tight text-zinc-100 sm:text-3xl">
             Workspace Settings
           </h2>
-          <Badge variant="secondary" className="text-[11px] py-0.5">
+          <Badge variant="secondary" className="text-[10px] py-0.5">
             System Config
           </Badge>
         </div>
@@ -84,7 +98,7 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 p-4">
+          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950 p-4">
             <div className="space-y-1">
               <span className="text-sm font-semibold text-zinc-100 block">
                 Active Provider:{" "}
@@ -127,45 +141,53 @@ export default function SettingsPage() {
       </Card>
 
       {/* Editorial Target Defaults */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-zinc-800">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Settings className="h-4 w-4 text-purple-400" />
-            <span>Publication Defaults</span>
-          </CardTitle>
-          <CardDescription>
-            Target newsletter branding and length parameters
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="text-xs font-medium text-zinc-300 mb-1 block">
-                Publication Name
-              </label>
-              <Input
-                value={publication}
-                onChange={(e) => setPublication(e.target.value)}
-                placeholder="This Week in AI"
-              />
-            </div>
+      <form onSubmit={handleSavePreferences}>
+        <Card>
+          <CardHeader className="pb-3 border-b border-zinc-800">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <Settings className="h-4 w-4 text-purple-400" />
+              <span>Publication Defaults</span>
+            </CardTitle>
+            <CardDescription>
+              Target newsletter branding and length parameters
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="text-xs font-medium text-zinc-300 mb-1.5 block">
+                  Publication Name
+                </label>
+                <Input
+                  value={publication}
+                  onChange={(e) => setPublication(e.target.value)}
+                  placeholder="This Week in AI"
+                />
+              </div>
 
-            <div>
-              <label className="text-xs font-medium text-zinc-300 mb-1 block">
-                Default Word Count Target: {wordCountTarget}w
-              </label>
-              <Input
-                type="number"
-                min={300}
-                max={500}
-                step={25}
-                value={wordCountTarget}
-                onChange={(e) => setWordCountTarget(parseInt(e.target.value, 10))}
-              />
+              <div>
+                <label className="text-xs font-medium text-zinc-300 mb-1.5 block">
+                  Default Word Count Target: {wordCountTarget}w
+                </label>
+                <Input
+                  type="number"
+                  min={300}
+                  max={500}
+                  step={25}
+                  value={wordCountTarget}
+                  onChange={(e) => setWordCountTarget(parseInt(e.target.value, 10))}
+                />
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+          <CardFooter className="flex justify-end pt-3">
+            <Button type="submit" variant="secondary" size="sm" className="gap-1.5 text-xs">
+              {savedSuccess ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Sliders className="h-3.5 w-3.5" />}
+              <span>{savedSuccess ? "Saved Successfully" : "Update Preferences"}</span>
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
 
       {/* Persistence & Data Backup */}
       <Card>
@@ -179,7 +201,7 @@ export default function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 p-4">
+          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950 p-4">
             <div className="space-y-1">
               <span className="text-sm font-semibold text-zinc-100 block">
                 Local File Database Active
@@ -201,6 +223,6 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }

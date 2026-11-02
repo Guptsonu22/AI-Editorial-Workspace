@@ -11,9 +11,10 @@ import {
   Bookmark,
   Settings,
   Sparkles,
-  Layers,
+  X,
   ExternalLink,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -58,24 +59,42 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
 
-  return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-zinc-800 bg-zinc-950/95 backdrop-blur-md">
+  const sidebarContent = (
+    <div className="flex h-full flex-col bg-zinc-950/95 backdrop-blur-md">
       {/* Brand & Publication Header */}
-      <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 shadow-md shadow-blue-500/20 text-white font-bold text-sm">
-          AI
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold tracking-tight text-zinc-100 flex items-center gap-1.5">
-            Editorial Workspace
-          </span>
-          <span className="text-[11px] font-medium text-zinc-400">
-            This Week in AI
-          </span>
-        </div>
+      <div className="flex h-16 items-center justify-between border-b border-zinc-800 px-6">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 shadow-md shadow-blue-500/20 text-white font-bold text-sm group-hover:scale-105 transition-transform">
+            AI
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold tracking-tight text-zinc-100 flex items-center gap-1.5">
+              Editorial Workspace
+            </span>
+            <span className="text-[11px] font-medium text-zinc-400">
+              This Week in AI
+            </span>
+          </div>
+        </Link>
+
+        {/* Mobile close button */}
+        {onMobileClose && (
+          <button
+            onClick={onMobileClose}
+            className="md:hidden rounded-md p-1.5 text-zinc-400 hover:text-zinc-100 focus:outline-none"
+            aria-label="Close sidebar"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* Main Navigation */}
@@ -96,11 +115,12 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onMobileClose}
                 className={cn(
-                  "group flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-all duration-150",
+                  "group relative flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
                   isActive
-                    ? "bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700/60"
-                    : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+                    ? "bg-zinc-800 text-zinc-100 shadow-sm border border-zinc-700/60 font-semibold"
+                    : "text-zinc-400 hover:bg-zinc-900/80 hover:text-zinc-200"
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -132,7 +152,7 @@ export function Sidebar() {
         </nav>
 
         {/* Editorial Standards Card */}
-        <div className="mt-8 rounded-lg border border-zinc-800/80 bg-zinc-900/40 p-3.5 text-xs text-zinc-400">
+        <div className="mt-8 rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-4 text-xs text-zinc-400">
           <div className="flex items-center gap-2 text-zinc-200 font-semibold mb-1.5">
             <Sparkles className="h-3.5 w-3.5 text-blue-400" />
             <span>Citation Standard</span>
@@ -153,6 +173,44 @@ export function Sidebar() {
           <span className="font-mono text-[11px] text-zinc-400">v1.0.0</span>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar */}
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-64 md:flex-col md:border-r md:border-zinc-800">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Animated Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={onMobileClose}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+              aria-hidden="true"
+            />
+
+            {/* Slide-in Sidebar Panel */}
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+              className="relative flex h-full w-72 flex-col border-r border-zinc-800 shadow-2xl"
+            >
+              {sidebarContent}
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

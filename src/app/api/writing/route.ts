@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAllDrafts, saveDraft } from "@/lib/db/storage";
+import { getAllDrafts, saveDraft, getArticleById, saveArticle } from "@/lib/db/storage";
 import { WritingDraft } from "@/types/editorial";
 import { calculateReadability } from "@/lib/analysis/readability";
 import { analyzeProseHeuristics } from "@/lib/analysis/heuristics";
@@ -67,6 +67,19 @@ export async function POST(req: NextRequest) {
     };
 
     const saved = await saveDraft(draft);
+
+    // If draft is linked to a Newsletter Studio article, keep article content in sync
+    if (articleId) {
+      const article = await getArticleById(articleId);
+      if (article) {
+        article.content = content;
+        article.headline = title;
+        article.wordCount = metrics.wordCount;
+        article.updatedAt = new Date().toISOString();
+        await saveArticle(article);
+      }
+    }
+
     return NextResponse.json({ success: true, data: saved });
   } catch (err: any) {
     return NextResponse.json(

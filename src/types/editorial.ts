@@ -28,19 +28,27 @@ export interface SourceRecord {
 export interface KeyDevelopment {
   event: string;
   sourceIndex: number;
+  sourceTitle?: string;
   timestamp?: string;
+  isSupported?: boolean;
 }
 
 export interface VerifiedFact {
   fact: string;
   sourceIndex: number;
+  sourceTitle?: string;
   quote?: string;
+  evidenceSnippet?: string;
+  isSupported?: boolean;
+  unsupportedReason?: string;
 }
 
 export interface SpeculationItem {
   claim: string;
   sourceIndex: number;
+  sourceTitle?: string;
   editorialNote: string;
+  isSupported?: boolean;
 }
 
 export interface EditorialAngle {
@@ -143,6 +151,8 @@ export interface EditorialMetrics {
   passiveVoiceCount: number;
   jargonCount: number;
   fillerCount: number;
+  complexityCount?: number;
+  repetitionCount?: number;
 }
 
 export type DraftStatus = "draft" | "analyzed" | "finalized";
@@ -182,7 +192,9 @@ export interface NewsletterArticle {
   angleId?: string;
   angleTitle?: string;
   headline: string;
+  originalHeadline?: string;
   content: string;
+  originalContent?: string;
   wordCount: number;
   targetWordCount: number;
   status: NewsletterStatus;
