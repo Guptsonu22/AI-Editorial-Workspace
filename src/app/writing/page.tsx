@@ -56,7 +56,7 @@ For builders and technology leaders, the implications are profound. At the end o
 
 The lesson for editorial curators and engineering leaders is unmistakable: brute-force compute scaling is no longer the sole path to intelligence. Algorithmic efficiency, cold-start reinforcement learning, and open weights have democratized frontier reasoning, permanently resetting the unit economics of AI-native software.`;
 
-export default function WritingAssistantPage() {
+function WritingAssistantContent() {
   const searchParams = useSearchParams();
   const draftIdParam = searchParams.get("draftId");
 
@@ -886,7 +886,7 @@ export default function WritingAssistantPage() {
 
                               {/* Original Passage Flagged */}
                               <div className="rounded-lg bg-zinc-900/90 border border-zinc-800/80 p-2.5 text-xs text-zinc-300 font-serif italic">
-                                "{sugg.originalText}"
+                                &ldquo;{sugg.originalText}&rdquo;
                               </div>
 
                               {/* Explanation & Why it matters */}
@@ -1094,5 +1094,13 @@ export default function WritingAssistantPage() {
         </>
       )}
     </motion.div>
+  );
+}
+
+export default function WritingAssistantPage() {
+  return (
+    <React.Suspense fallback={<div className="p-8 text-zinc-500 text-sm">Loading Writing Assistant...</div>}>
+      <WritingAssistantContent />
+    </React.Suspense>
   );
 }

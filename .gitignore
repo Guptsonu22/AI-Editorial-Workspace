@@ -30,4 +30,6 @@ next-env.d.ts
 # Temporary / OS files
 powershell
 powershell.exe
+powershell.cmd
+powershell.bat
 thumbs.db

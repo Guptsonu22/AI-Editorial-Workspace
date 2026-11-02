@@ -618,7 +618,7 @@ ${brief.citations.map((c) => `[Source ${c.sourceIndex}]: ${c.title} — ${c.url}
               <Search className="h-8 w-8 text-zinc-600 mx-auto" />
               <p className="font-medium text-zinc-300">No sources ingested yet</p>
               <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
-                Fill the URL rows on the left or click "Load 3 Real URLs + 1 Fallback" above to test the extraction workflow.
+                Fill the URL rows on the left or click &quot;Load 3 Real URLs + 1 Fallback&quot; above to test the extraction workflow.
               </p>
             </div>
           ) : (
@@ -703,7 +703,7 @@ ${brief.citations.map((c) => `[Source ${c.sourceIndex}]: ${c.title} — ${c.url}
 
                         {src.manualContent && (
                           <p className="text-xs text-zinc-400 line-clamp-2 pt-1 font-serif italic border-l-2 border-zinc-700 pl-2">
-                            "{src.manualContent}"
+                            &ldquo;{src.manualContent}&rdquo;
                           </p>
                         )}
                       </div>
@@ -973,7 +973,7 @@ ${brief.citations.map((c) => `[Source ${c.sourceIndex}]: ${c.title} — ${c.url}
                             animate={{ opacity: 1, height: "auto" }}
                             className="mt-2 rounded bg-zinc-950/90 border border-zinc-800 p-2.5 text-[11px] text-zinc-300 font-serif italic"
                           >
-                            "{fact.evidenceSnippet || fact.quote}"
+                            &ldquo;{fact.evidenceSnippet || fact.quote}&rdquo;
                           </motion.div>
                         )}
                       </div>
@@ -1002,7 +1002,7 @@ ${brief.citations.map((c) => `[Source ${c.sourceIndex}]: ${c.title} — ${c.url}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="leading-relaxed font-medium text-amber-200/90 flex-1">
-                        Claim: "{spec.claim}"
+                        Claim: &ldquo;{spec.claim}&rdquo;
                       </p>
 
                       <Badge variant="amber" className="text-[9px] py-0 shrink-0">

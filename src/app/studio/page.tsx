@@ -59,7 +59,7 @@ interface StudioHistoryEntry {
   description: string;
 }
 
-export default function NewsletterStudioPage() {
+function NewsletterStudioContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialProjectId = searchParams.get("projectId");
@@ -896,7 +896,7 @@ export default function NewsletterStudioPage() {
 
                             {/* Original Flagged Passage */}
                             <div className="rounded-lg bg-zinc-900/90 border border-zinc-800 p-2.5 text-xs text-zinc-300 font-serif italic">
-                              "{sugg.originalText}"
+                              &ldquo;{sugg.originalText}&rdquo;
                             </div>
 
                             {/* Issue & Why it matters */}
@@ -1073,5 +1073,13 @@ export default function NewsletterStudioPage() {
         </>
       )}
     </motion.div>
+  );
+}
+
+export default function NewsletterStudioPage() {
+  return (
+    <React.Suspense fallback={<div className="p-8 text-zinc-500 text-sm">Loading Newsletter Studio...</div>}>
+      <NewsletterStudioContent />
+    </React.Suspense>
   );
 }

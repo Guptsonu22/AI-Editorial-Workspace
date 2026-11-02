@@ -22,6 +22,10 @@ const badgeVariants = cva(
           "border-sky-500/30 bg-sky-950/60 text-sky-300",
         rose:
           "border-rose-500/30 bg-rose-950/60 text-rose-300",
+        indigo:
+          "border-indigo-500/30 bg-indigo-950/60 text-indigo-300",
+        violet:
+          "border-violet-500/30 bg-violet-950/60 text-violet-300",
       },
     },
     defaultVariants: {

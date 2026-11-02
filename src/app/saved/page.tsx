@@ -226,7 +226,7 @@ export default function SavedResearchPage() {
 
           {filteredProjects.length === 0 && searchQuery && (
             <div className="text-center py-16 text-zinc-500 text-sm">
-              No research projects match "{searchQuery}".
+              No research projects match &ldquo;{searchQuery}&rdquo;.
             </div>
           )}
         </>
