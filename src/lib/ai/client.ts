@@ -35,10 +35,18 @@ export class EditorialAIEngine {
     this.anthropicKey = process.env.ANTHROPIC_API_KEY;
     this.openAiKey = process.env.OPENAI_API_KEY;
 
-    if (this.anthropicKey && this.anthropicKey.startsWith("sk-ant-")) {
-      this.provider = "anthropic";
-    } else if (this.openAiKey && this.openAiKey.startsWith("sk-")) {
+    const configuredProvider = process.env.AI_MODEL_PROVIDER?.toLowerCase();
+    const isValidAnthropic = !!this.anthropicKey && this.anthropicKey.startsWith("sk-ant-") && !this.anthropicKey.includes("...");
+    const isValidOpenAi = !!this.openAiKey && this.openAiKey.startsWith("sk-") && !this.openAiKey.includes("...");
+
+    if (configuredProvider === "openai" && isValidOpenAi) {
       this.provider = "openai";
+    } else if (configuredProvider === "anthropic" && isValidAnthropic) {
+      this.provider = "anthropic";
+    } else if (isValidOpenAi) {
+      this.provider = "openai";
+    } else if (isValidAnthropic) {
+      this.provider = "anthropic";
     } else {
       this.provider = "heuristic";
     }
