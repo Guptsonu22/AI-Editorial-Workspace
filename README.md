@@ -9,6 +9,11 @@
 [![OpenAI GPT-4o](https://img.shields.io/badge/OpenAI-GPT--4o-green?style=flat-square&logo=openai)](https://openai.com/)
 [![Architecture](https://img.shields.io/badge/Architecture-Dual--Engine_Governed-orange?style=flat-square)]()
 
+> 🚀 **Live Production Deployment:** [https://ai-editorial-workspace-murex.vercel.app](https://ai-editorial-workspace-murex.vercel.app)  
+> 📦 **GitHub Source Repository:** [https://github.com/Guptsonu22/AI-Editorial-Workspace](https://github.com/Guptsonu22/AI-Editorial-Workspace)  
+> 🧪 **Automated Test Suite:** 21 / 21 Passed (100% Success Rate)  
+> 🗄️ **Database Persistence:** Supabase PostgreSQL Cloud Active + Atomic Local Fallback
+
 ---
 
 ## 1. Executive Summary & Product Objective

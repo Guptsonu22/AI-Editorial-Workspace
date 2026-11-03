@@ -5,6 +5,8 @@
 **Project:** FDE Intern Take Home Assignment  
 **Publication:** *This Week in AI*  
 **Date:** November 2026  
+**Live Application:** [https://ai-editorial-workspace-murex.vercel.app](https://ai-editorial-workspace-murex.vercel.app)  
+**Source Repository:** [https://github.com/Guptsonu22/AI-Editorial-Workspace](https://github.com/Guptsonu22/AI-Editorial-Workspace)  
 
 ---
 
