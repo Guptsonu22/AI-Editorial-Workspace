@@ -115,7 +115,12 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            {settings?.aiProvider === "anthropic" || settings?.aiProvider === "openai" ? (
+            {settings?.isOpenAiQuotaExhausted ? (
+              <Badge variant="amber" className="gap-1 text-xs text-amber-300 border-amber-900/40">
+                <AlertCircle className="h-3 w-3 text-amber-400" />
+                <span>Quota Exhausted (429)</span>
+              </Badge>
+            ) : settings?.aiProvider === "anthropic" || settings?.aiProvider === "openai" ? (
               <Badge variant="emerald" className="gap-1 text-xs">
                 <CheckCircle2 className="h-3 w-3" />
                 <span>Live API Active</span>
@@ -127,6 +132,40 @@ export default function SettingsPage() {
               </Badge>
             )}
           </div>
+
+          {settings?.isOpenAiQuotaExhausted && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-4 text-xs space-y-2">
+              <div className="flex items-center gap-2 text-amber-300 font-semibold">
+                <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
+                <span>OpenAI Account Notice: Quota Exhausted (HTTP 429)</span>
+              </div>
+              <p className="text-zinc-300 leading-relaxed">
+                The configured OpenAI API key has zero available credit balance (<code className="text-amber-200">credit_balance_exhausted</code>). The circuit breaker is active to eliminate redundant failing network calls.
+              </p>
+              <div className="rounded-lg bg-zinc-950/70 border border-zinc-800 p-3 space-y-1 text-zinc-400">
+                <p className="text-zinc-200 font-medium">How to activate live LLM generation:</p>
+                <ol className="list-decimal pl-4 space-y-1">
+                  <li>
+                    Add billing credits to OpenAI at{" "}
+                    <a
+                      href="https://platform.openai.com/account/billing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:underline"
+                    >
+                      platform.openai.com/account/billing
+                    </a>
+                  </li>
+                  <li>
+                    Or add an <code className="text-zinc-200">ANTHROPIC_API_KEY</code> in <code className="text-zinc-200">.env.local</code> to route through Claude 3.5 Sonnet.
+                  </li>
+                </ol>
+              </div>
+              <p className="text-zinc-400 italic">
+                In the meantime, the deterministic heuristic engine synthesizes all content with 100% citation traceability.
+              </p>
+            </div>
+          )}
 
           <Alert className="text-xs">
             <Info className="h-4 w-4 text-blue-400" />

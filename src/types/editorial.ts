@@ -82,6 +82,8 @@ export interface ResearchBrief {
   editorialAngles: EditorialAngle[];
   citations: CitationLink[];
   insufficientEvidenceNotes?: string;
+  generationEngine?: "claude-3-5-sonnet" | "gpt-4o" | "heuristic-fallback";
+  engineNotice?: string;
   createdAt: string;
 }
 
@@ -134,6 +136,7 @@ export interface WritingSuggestion {
   startIndex: number;
   endIndex: number;
   status: SuggestionStatus;
+  generatedBy?: "ai-enhanced" | "deterministic-heuristic";
   createdAt: string;
 }
 
@@ -198,6 +201,8 @@ export interface NewsletterArticle {
   wordCount: number;
   targetWordCount: number;
   status: NewsletterStatus;
+  generationEngine?: "claude-3-5-sonnet" | "gpt-4o" | "heuristic-fallback";
+  engineNotice?: string;
   sourceLinks: Array<{
     title: string;
     url: string;
@@ -229,6 +234,8 @@ export interface UserSettings {
   aiProvider: "anthropic" | "openai" | "heuristic";
   hasAnthropicKey: boolean;
   hasOpenAiKey: boolean;
+  isOpenAiQuotaExhausted?: boolean;
+  lastQuotaError?: string | null;
   targetPublication: string;
   defaultTargetWordCount: number;
 }

@@ -30,19 +30,28 @@ export class EditorialAIEngine {
   private provider: "anthropic" | "openai" | "heuristic";
   private anthropicKey: string | undefined;
   private openAiKey: string | undefined;
+  private isOpenAiQuotaExhausted: boolean = false;
+  private lastQuotaError: string | null = null;
 
   constructor() {
     this.anthropicKey = process.env.ANTHROPIC_API_KEY;
     this.openAiKey = process.env.OPENAI_API_KEY;
 
+    // Check if quota exhaustion is pre-flagged
+    if (process.env.OPENAI_API_QUOTA_EXHAUSTED === "true") {
+      this.isOpenAiQuotaExhausted = true;
+      this.lastQuotaError =
+        "OpenAI API Quota Exhausted: HTTP 429 credit_balance_exhausted. Account billing balance is zero.";
+    }
+
     const configuredProvider = process.env.AI_MODEL_PROVIDER?.toLowerCase();
     const isValidAnthropic = !!this.anthropicKey && this.anthropicKey.startsWith("sk-ant-") && !this.anthropicKey.includes("...");
     const isValidOpenAi = !!this.openAiKey && this.openAiKey.startsWith("sk-") && !this.openAiKey.includes("...");
 
-    if (configuredProvider === "openai" && isValidOpenAi) {
-      this.provider = "openai";
-    } else if (configuredProvider === "anthropic" && isValidAnthropic) {
+    if (configuredProvider === "anthropic" && isValidAnthropic) {
       this.provider = "anthropic";
+    } else if (configuredProvider === "openai" && isValidOpenAi) {
+      this.provider = "openai";
     } else if (isValidOpenAi) {
       this.provider = "openai";
     } else if (isValidAnthropic) {
@@ -54,6 +63,28 @@ export class EditorialAIEngine {
 
   public getActiveProvider(): string {
     return this.provider;
+  }
+
+  public getQuotaStatus(): {
+    isOpenAiQuotaExhausted: boolean;
+    lastQuotaError: string | null;
+    activeProvider: string;
+  } {
+    return {
+      isOpenAiQuotaExhausted: this.isOpenAiQuotaExhausted,
+      lastQuotaError: this.lastQuotaError,
+      activeProvider: this.provider,
+    };
+  }
+
+  public tripQuotaBreaker(reason: string): void {
+    this.isOpenAiQuotaExhausted = true;
+    this.lastQuotaError = reason;
+  }
+
+  public resetQuotaBreaker(): void {
+    this.isOpenAiQuotaExhausted = false;
+    this.lastQuotaError = null;
   }
 
   // ----------------------------------------------------------------------------
@@ -76,23 +107,51 @@ export class EditorialAIEngine {
       url: s.url,
     }));
 
-    // If live API key is present, attempt live call with fallback
+    // 1. Attempt configured primary provider
     if (this.provider === "anthropic" && this.anthropicKey) {
       try {
-        return await this.callAnthropicForBrief(projectTitle, sources, citations);
-      } catch (err) {
-        console.warn("Anthropic API error, falling back to heuristic engine:", err);
+        const brief = await this.callAnthropicForBrief(projectTitle, sources, citations);
+        brief.generationEngine = "claude-3-5-sonnet";
+        return brief;
+      } catch (err: any) {
+        console.warn("Anthropic API error, attempting failover or heuristic engine:", err?.message || err);
       }
-    } else if (this.provider === "openai" && this.openAiKey) {
+    } else if (this.provider === "openai" && this.openAiKey && !this.isOpenAiQuotaExhausted) {
       try {
-        return await this.callOpenAiForBrief(projectTitle, sources, citations);
-      } catch (err) {
-        console.warn("OpenAI API error, falling back to heuristic engine:", err);
+        const brief = await this.callOpenAiForBrief(projectTitle, sources, citations);
+        brief.generationEngine = "gpt-4o";
+        return brief;
+      } catch (err: any) {
+        console.warn("OpenAI API error, attempting failover or heuristic engine:", err?.message || err);
       }
     }
 
-    // High-Fidelity Heuristic Fallback
-    return this.generateHeuristicBrief(projectTitle, sources, citations);
+    // 2. Cross-provider failover if alternate provider key is configured
+    if (this.anthropicKey && this.provider !== "anthropic") {
+      try {
+        const brief = await this.callAnthropicForBrief(projectTitle, sources, citations);
+        brief.generationEngine = "claude-3-5-sonnet";
+        return brief;
+      } catch (err: any) {
+        console.warn("Anthropic failover failed:", err?.message || err);
+      }
+    } else if (this.openAiKey && this.provider !== "openai" && !this.isOpenAiQuotaExhausted) {
+      try {
+        const brief = await this.callOpenAiForBrief(projectTitle, sources, citations);
+        brief.generationEngine = "gpt-4o";
+        return brief;
+      } catch (err: any) {
+        console.warn("OpenAI failover failed:", err?.message || err);
+      }
+    }
+
+    // 3. High-Fidelity Heuristic Fallback
+    const fallbackBrief = this.generateHeuristicBrief(projectTitle, sources, citations);
+    fallbackBrief.generationEngine = "heuristic-fallback";
+    fallbackBrief.engineNotice = this.isOpenAiQuotaExhausted
+      ? "Synthesized via Deterministic Heuristic Engine (OpenAI API Quota Exhausted: credit_balance_exhausted / HTTP 429)."
+      : "Synthesized via Deterministic Heuristic Engine (Offline / Deterministic Mode).";
+    return fallbackBrief;
   }
 
   // ----------------------------------------------------------------------------
@@ -103,37 +162,81 @@ export class EditorialAIEngine {
     brief: ResearchBrief,
     selectedAngle: EditorialAngle,
     targetWordCount: number = 400
-  ): Promise<{ headline: string; content: string; wordCount: number }> {
+  ): Promise<{
+    headline: string;
+    content: string;
+    wordCount: number;
+    generationEngine: "claude-3-5-sonnet" | "gpt-4o" | "heuristic-fallback";
+    engineNotice?: string;
+  }> {
+    // 1. Attempt configured primary provider
     if (this.provider === "anthropic" && this.anthropicKey) {
       try {
-        return await this.callAnthropicForNewsletter(
+        const res = await this.callAnthropicForNewsletter(
           projectTitle,
           brief,
           selectedAngle,
           targetWordCount
         );
-      } catch (err) {
-        console.warn("Anthropic API error, falling back to heuristic engine:", err);
+        return { ...res, generationEngine: "claude-3-5-sonnet" };
+      } catch (err: any) {
+        console.warn("Anthropic newsletter synthesis error, attempting failover:", err?.message || err);
       }
-    } else if (this.provider === "openai" && this.openAiKey) {
+    } else if (this.provider === "openai" && this.openAiKey && !this.isOpenAiQuotaExhausted) {
       try {
-        return await this.callOpenAiForNewsletter(
+        const res = await this.callOpenAiForNewsletter(
           projectTitle,
           brief,
           selectedAngle,
           targetWordCount
         );
-      } catch (err) {
-        console.warn("OpenAI API error, falling back to heuristic engine:", err);
+        return { ...res, generationEngine: "gpt-4o" };
+      } catch (err: any) {
+        console.warn("OpenAI newsletter synthesis error, attempting failover:", err?.message || err);
       }
     }
 
-    return this.generateHeuristicNewsletter(
+    // 2. Cross-provider failover
+    if (this.anthropicKey && this.provider !== "anthropic") {
+      try {
+        const res = await this.callAnthropicForNewsletter(
+          projectTitle,
+          brief,
+          selectedAngle,
+          targetWordCount
+        );
+        return { ...res, generationEngine: "claude-3-5-sonnet" };
+      } catch (err: any) {
+        console.warn("Anthropic failover failed:", err?.message || err);
+      }
+    } else if (this.openAiKey && this.provider !== "openai" && !this.isOpenAiQuotaExhausted) {
+      try {
+        const res = await this.callOpenAiForNewsletter(
+          projectTitle,
+          brief,
+          selectedAngle,
+          targetWordCount
+        );
+        return { ...res, generationEngine: "gpt-4o" };
+      } catch (err: any) {
+        console.warn("OpenAI failover failed:", err?.message || err);
+      }
+    }
+
+    // 3. High-Fidelity Heuristic Fallback
+    const fallback = this.generateHeuristicNewsletter(
       projectTitle,
       brief,
       selectedAngle,
       targetWordCount
     );
+    return {
+      ...fallback,
+      generationEngine: "heuristic-fallback",
+      engineNotice: this.isOpenAiQuotaExhausted
+        ? "Synthesized via Deterministic Heuristic Engine (OpenAI API Quota Exhausted: credit_balance_exhausted / HTTP 429)."
+        : "Synthesized via Deterministic Heuristic Engine (Offline / Deterministic Mode).",
+    };
   }
 
   // ----------------------------------------------------------------------------
@@ -208,13 +311,17 @@ export class EditorialAIEngine {
             suggestedText: aiItem.suggestedText,
             explanation: aiItem.explanation || sugg.explanation,
             whyItMatters: aiItem.whyItMatters || sugg.whyItMatters,
+            generatedBy: "ai-enhanced",
           };
         }
-        return sugg;
+        return { ...sugg, generatedBy: "deterministic-heuristic" };
       });
     }
 
-    return deterministicSuggestions;
+    return deterministicSuggestions.map((s) => ({
+      ...s,
+      generatedBy: "deterministic-heuristic",
+    }));
   }
 
   private async callOpenAiForWriting(
@@ -247,7 +354,22 @@ export class EditorialAIEngine {
       }),
     });
 
-    if (!response.ok) return deterministicSuggestions;
+    if (!response.ok) {
+      const errText = await response.text();
+      if (
+        response.status === 429 ||
+        errText.includes("insufficient_quota") ||
+        errText.includes("credit_balance_exhausted")
+      ) {
+        this.isOpenAiQuotaExhausted = true;
+        this.lastQuotaError =
+          "OpenAI API Quota Exhausted: HTTP 429 credit_balance_exhausted. Fallback deterministic heuristic engine active.";
+      }
+      return deterministicSuggestions.map((s) => ({
+        ...s,
+        generatedBy: "deterministic-heuristic",
+      }));
+    }
 
     const data = await response.json();
     const raw = data.choices?.[0]?.message?.content || "";
@@ -263,13 +385,17 @@ export class EditorialAIEngine {
             suggestedText: aiItem.suggestedText,
             explanation: aiItem.explanation || sugg.explanation,
             whyItMatters: aiItem.whyItMatters || sugg.whyItMatters,
+            generatedBy: "ai-enhanced",
           };
         }
-        return sugg;
+        return { ...sugg, generatedBy: "deterministic-heuristic" };
       });
     }
 
-    return deterministicSuggestions;
+    return deterministicSuggestions.map((s) => ({
+      ...s,
+      generatedBy: "deterministic-heuristic",
+    }));
   }
 
   // ----------------------------------------------------------------------------
@@ -418,7 +544,17 @@ Generate the publication-ready newsletter draft. Return valid JSON only.`;
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI HTTP error ${response.status}`);
+      const errText = await response.text();
+      if (
+        response.status === 429 ||
+        errText.includes("insufficient_quota") ||
+        errText.includes("credit_balance_exhausted")
+      ) {
+        this.isOpenAiQuotaExhausted = true;
+        this.lastQuotaError =
+          "OpenAI API Quota Exhausted: HTTP 429 credit_balance_exhausted. Account balance is zero.";
+      }
+      throw new Error(`OpenAI HTTP error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();
@@ -463,7 +599,17 @@ Generate the publication-ready newsletter draft. Return valid JSON only.`;
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI HTTP error ${response.status}`);
+      const errText = await response.text();
+      if (
+        response.status === 429 ||
+        errText.includes("insufficient_quota") ||
+        errText.includes("credit_balance_exhausted")
+      ) {
+        this.isOpenAiQuotaExhausted = true;
+        this.lastQuotaError =
+          "OpenAI API Quota Exhausted: HTTP 429 credit_balance_exhausted. Account balance is zero.";
+      }
+      throw new Error(`OpenAI HTTP error ${response.status}: ${errText}`);
     }
 
     const data = await response.json();

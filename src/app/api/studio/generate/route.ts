@@ -74,6 +74,8 @@ export async function POST(req: NextRequest) {
       wordCount: generated.wordCount,
       targetWordCount,
       status: "ready",
+      generationEngine: generated.generationEngine,
+      engineNotice: generated.engineNotice,
       sourceLinks: project.brief.citations.map((c) => ({
         title: c.title,
         url: c.url,

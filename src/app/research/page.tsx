@@ -797,11 +797,27 @@ ${brief.citations.map((c) => `[Source ${c.sourceIndex}]: ${c.title} — ${c.url}
           {/* Header Action Bar */}
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
                 <Badge variant="emerald" className="gap-1 py-0.5">
                   <CheckCircle2 className="h-3 w-3" />
                   <span>Evidence Brief Generated</span>
                 </Badge>
+                {brief.generationEngine === "gpt-4o" && (
+                  <Badge variant="violet" className="gap-1 py-0.5">
+                    <span>🤖 Synthesized via OpenAI GPT-4o</span>
+                  </Badge>
+                )}
+                {brief.generationEngine === "claude-3-5-sonnet" && (
+                  <Badge variant="violet" className="gap-1 py-0.5">
+                    <span>⚡ Synthesized via Claude 3.5 Sonnet</span>
+                  </Badge>
+                )}
+                {brief.generationEngine === "heuristic-fallback" && (
+                  <Badge variant="amber" className="gap-1 py-0.5">
+                    <AlertTriangle className="h-3 w-3 text-amber-400" />
+                    <span>⚡ Deterministic Heuristic Engine (OpenAI Quota Exhausted)</span>
+                  </Badge>
+                )}
                 <span className="text-xs text-zinc-500 font-mono">
                   {new Date(brief.createdAt).toLocaleTimeString()}
                 </span>
@@ -823,6 +839,22 @@ ${brief.citations.map((c) => `[Source ${c.sourceIndex}]: ${c.title} — ${c.url}
               </Button>
             </div>
           </div>
+
+          {/* Engine Transparency Banner */}
+          {brief.generationEngine === "heuristic-fallback" && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-xs text-amber-200/90 flex items-start gap-3">
+              <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-semibold text-amber-100">
+                  Notice: Deterministic Heuristic Engine Active
+                </p>
+                <p className="text-zinc-300">
+                  {brief.engineNotice ||
+                    "Live OpenAI API quota is exhausted (HTTP 429 credit_balance_exhausted). This brief was synthesized using deterministic algorithmic extraction directly from source tokens with 100% verified citation traceability."}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* What Happened & Why It Matters */}
           <div className="grid gap-6 md:grid-cols-2">

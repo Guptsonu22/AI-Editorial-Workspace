@@ -28,6 +28,7 @@ import {
   HelpCircle,
   Clock,
   Layers,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,8 @@ function NewsletterStudioContent() {
   const [showBriefPreview, setShowBriefPreview] = useState(false);
 
   // Integrated Writing Assistant Review States
+  const [generationEngine, setGenerationEngine] = useState<string | undefined>();
+  const [engineNotice, setEngineNotice] = useState<string | undefined>();
   const [linterSuggestions, setLinterSuggestions] = useState<WritingSuggestion[]>([]);
   const [linterMetrics, setLinterMetrics] = useState<EditorialMetrics | null>(null);
   const [originalLinterMetrics, setOriginalLinterMetrics] = useState<EditorialMetrics | null>(null);
@@ -135,6 +138,8 @@ function NewsletterStudioContent() {
               setOriginalHeadline(match.originalHeadline || match.headline);
               setContent(match.content);
               setOriginalContent(match.originalContent || match.content);
+              setGenerationEngine(match.generationEngine);
+              setEngineNotice(match.engineNotice);
               if (match.angleId) setSelectedAngleId(match.angleId);
             }
           }
@@ -170,6 +175,8 @@ function NewsletterStudioContent() {
         setOriginalHeadline(json.data.headline);
         setContent(json.data.content);
         setOriginalContent(json.data.content);
+        setGenerationEngine(json.data.generationEngine);
+        setEngineNotice(json.data.engineNotice);
         setHistory([]);
         setActiveTab("editor");
 
@@ -703,7 +710,22 @@ function NewsletterStudioContent() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-2 flex-wrap text-xs">
+                  {generationEngine === "gpt-4o" && (
+                    <Badge variant="violet" className="text-xs">
+                      🤖 OpenAI GPT-4o
+                    </Badge>
+                  )}
+                  {generationEngine === "claude-3-5-sonnet" && (
+                    <Badge variant="violet" className="text-xs">
+                      ⚡ Claude 3.5 Sonnet
+                    </Badge>
+                  )}
+                  {generationEngine === "heuristic-fallback" && (
+                    <Badge variant="amber" className="text-xs">
+                      ⚡ Deterministic Heuristic Engine
+                    </Badge>
+                  )}
                   {isOptimalWordCount ? (
                     <Badge variant="emerald" className="text-xs">
                       {currentWordCount} words • Optimal Length (300–500w)
@@ -718,6 +740,22 @@ function NewsletterStudioContent() {
                   </span>
                 </div>
               </div>
+
+              {/* Generation Engine Transparency Notice */}
+              {generationEngine === "heuristic-fallback" && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-xs text-amber-200/90 flex items-start gap-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-amber-100">
+                      Notice: Deterministic Heuristic Synthesis Active
+                    </p>
+                    <p className="text-zinc-300">
+                      {engineNotice ||
+                        "OpenAI API quota is exhausted (HTTP 429 credit_balance_exhausted). This 300–500 word editorial was synthesized deterministically directly from extracted source tokens with 100% citation traceability."}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Tab 1: Editorial Editor */}
               {activeTab === "editor" && (

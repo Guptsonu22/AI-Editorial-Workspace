@@ -10,10 +10,14 @@ export async function GET() {
     const hasOpenAiKey = !!process.env.OPENAI_API_KEY;
     const activeProvider = aiEngine.getActiveProvider() as "anthropic" | "openai" | "heuristic";
 
+    const quotaStatus = aiEngine.getQuotaStatus();
+
     const settings: UserSettings = {
       aiProvider: activeProvider,
       hasAnthropicKey,
       hasOpenAiKey,
+      isOpenAiQuotaExhausted: quotaStatus.isOpenAiQuotaExhausted,
+      lastQuotaError: quotaStatus.lastQuotaError,
       targetPublication: "This Week in AI",
       defaultTargetWordCount: 400,
     };

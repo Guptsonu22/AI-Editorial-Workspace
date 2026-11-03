@@ -878,6 +878,15 @@ function WritingAssistantContent() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   {getBadgeForType(sugg.type)}
+                                  {sugg.generatedBy === "ai-enhanced" ? (
+                                    <Badge variant="violet" className="text-[9px] py-0">
+                                      AI Polished
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-[9px] py-0 text-zinc-500">
+                                      Deterministic Rule
+                                    </Badge>
+                                  )}
                                   <span className="font-mono text-[10px] text-zinc-500">
                                     #{sugg.id}
                                   </span>
